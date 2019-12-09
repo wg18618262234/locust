@@ -866,16 +866,16 @@ def report_data():
             a=s.percentile(tpl='"%s",%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i').split(',')
             distribution.append(a)
         else:
-            distribution.append(s.name,0,"N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A")
-
-    for s in sort_stats(runners.locust_runner.stats.errors):
-        failures.append([
-            s.method,
-            s.name,
-            s.error,
-            s.occurrences,
-        ])
-
+            distribution.append(s.name, 0, "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A")
+        try:
+            failures.append([
+                s.method,
+                s.name,
+                s.error,
+                s.occurrences,
+            ])
+        except:
+            pass
     data = {
         'requests': requests,
         'distribution': distribution,
