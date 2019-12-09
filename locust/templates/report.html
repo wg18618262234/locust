@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Locust Test Report</title>
+    <link rel="stylesheet" type="text/css" href="./static/report_style.css">
+</head>
+<body>
+<div style="text-align: center"><h1>Test Report</h1></div>
+<div style="padding:20px">
+    <table id="requests" border="1">
+        <thead>
+        <tr>
+            <th>Method</th>
+            <th>Name</th>
+            <th># requests</th>
+            <th># failures</th>
+            <th>Median response time</th>
+            <th>Average response time</th>
+            <th>Min response time</th>
+            <th>Max response time</th>
+            <th>Average Content Size</th>
+            <th>Requests/s</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for r in requests %}
+        <tr>
+            {% for i in r %}
+            <td>{{ i }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<a href="http://127.0.0.1:5000/get/test_report_data"></a>
+<div style="padding:20px">
+    <table id="distribution" border="1">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th># requests</th>
+            <th>50%</th>
+            <th>66%</th>
+            <th>75%</th>
+            <th>80%</th>
+            <th>90%</th>
+            <th>95%</th>
+            <th>98%</th>
+            <th>99%</th>
+            <th>99.9%</th>
+            <th>99.99%</th>
+            <th>100%</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for r in distribution %}
+        <tr>
+            {% for i in r %}
+            <td>{{ i }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div style="padding:20px">
+    <table id="failures" border="1">
+        <thead>
+        <tr>
+            <th>Method</th>
+            <th>Name</th>
+            <th>Error</th>
+            <th>Occurrences</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for r in failures %}
+        <tr>
+            {% for i in r %}
+            <td>{{ i }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div style="padding:20px">
+    <table id="exceptions" border="1">
+        <thead>
+        <tr>
+            <th>Count</th>
+            <th>Message</th>
+            <th>Traceback</th>
+            <th>Nodes</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

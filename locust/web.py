@@ -24,7 +24,7 @@ from six.moves import StringIO, xrange
 
 from . import runners
 from .runners import MasterLocustRunner
-from .stats import distribution_csv, failures_csv, median_from_dict, requests_csv, sort_stats
+from .stats import distribution_csv, failures_csv, median_from_dict, requests_csv, sort_stats ,report_data
 from .util.cache import memoize
 from .util.rounding import proper_round
 
@@ -117,6 +117,11 @@ def failures_stats_csv():
     response.headers["Content-type"] = "text/csv"
     response.headers["Content-disposition"] = disposition
     return response
+
+@app.route("/stats/export/html")
+def export_html():
+    '''新增跳转report.html'''
+    return render_template("report.html",requests=report_data().get('requests'),distribution=report_data().get('distribution'),failures=report_data().get('failures'))
 
 @app.route('/stats/requests')
 @memoize(timeout=DEFAULT_CACHE_TIME, dynamic_timeout=True)

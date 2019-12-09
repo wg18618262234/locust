@@ -839,3 +839,46 @@ def failures_csv():
             s.occurrences,
         ))
     return "\n".join(rows)
+
+def report_data():
+    '''新增'''
+    from . import runners
+    requests=[]
+    distribution=[]
+    failures=[]
+
+    for s in chain(sort_stats(runners.locust_runner.request_stats), [runners.locust_runner.stats.total]):
+        requests.append([
+            s.method,
+            s.name,
+            s.num_requests,
+            s.num_failures,
+            s.median_response_time,
+            s.avg_response_time,
+            s.min_response_time or 0,
+            s.max_response_time,
+            s.avg_content_length,
+            s.total_rps,
+        ])
+
+    for s in chain(sort_stats(runners.locust_runner.request_stats), [runners.locust_runner.stats.total]):
+        if s.num_requests:
+            a=s.percentile(tpl='"%s",%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i').split(',')
+            distribution.append(a)
+        else:
+            distribution.append(s.name,0,"N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A","N/A")
+
+    for s in sort_stats(runners.locust_runner.stats.errors):
+        failures.append([
+            s.method,
+            s.name,
+            s.error,
+            s.occurrences,
+        ])
+
+    data = {
+        'requests': requests,
+        'distribution': distribution,
+        'failures': failures,
+    }
+    return data
