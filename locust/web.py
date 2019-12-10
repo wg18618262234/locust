@@ -121,7 +121,9 @@ def failures_stats_csv():
 @app.route("/stats/export/html")
 def export_html():
     '''新增跳转report.html'''
-    return render_template("report.html",requests=report_data().get('requests'),distribution=report_data().get('distribution'),failures=report_data().get('failures'))
+    from locustfile import WebsiteTasks
+    error_info = WebsiteTasks.error_info
+    return render_template("report.html", requests=report_data().get('requests'),distribution=report_data().get('distribution'), failures=report_data().get('failures'),error_info=error_info)
 
 @app.route('/stats/requests')
 @memoize(timeout=DEFAULT_CACHE_TIME, dynamic_timeout=True)

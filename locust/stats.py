@@ -77,11 +77,11 @@ class RequestStats(object):
         self.entries = {}
         self.errors = {}
         self.total = StatsEntry(self, "Aggregated", None, use_response_times_cache=True)
-    
+
     @property
     def num_requests(self):
         return self.total.num_requests
-    
+
     @property
     def num_none_requests(self):
         return self.total.num_none_requests
@@ -89,23 +89,23 @@ class RequestStats(object):
     @property
     def num_failures(self):
         return self.total.num_failures
-    
+
     @property
     def last_request_timestamp(self):
         return self.total.last_request_timestamp
-    
+
     @property
     def start_time(self):
         return self.total.start_time
-    
+
     def log_request(self, method, name, response_time, content_length):
         self.total.log(response_time, content_length)
         self.get(name, method).log(response_time, content_length)
-    
+
     def log_error(self, method, name, error):
         self.total.log_error(error)
         self.get(name, method).log_error(error)
-        
+
         # store error in errors dict
         key = StatsError.create_key(method, name, error)
         entry = self.errors.get(key)
@@ -113,7 +113,7 @@ class RequestStats(object):
             entry = StatsError(method, name, error)
             self.errors[key] = entry
         entry.occurred()
-    
+
     def get(self, name, method):
         """
         Retrieve a StatsEntry instance by name and method
@@ -123,7 +123,7 @@ class RequestStats(object):
             entry = StatsEntry(self, name, method)
             self.entries[(name, method)] = entry
         return entry
-    
+
     def reset_all(self):
         """
         Go through all stats entries and reset them to zero
@@ -132,7 +132,7 @@ class RequestStats(object):
         self.errors = {}
         for r in six.itervalues(self.entries):
             r.reset()
-    
+
     def clear_all(self):
         """
         Remove all stats entries and errors
@@ -140,49 +140,49 @@ class RequestStats(object):
         self.total = StatsEntry(self, "Aggregated", None, use_response_times_cache=True)
         self.entries = {}
         self.errors = {}
-    
+
     def serialize_stats(self):
         return [self.entries[key].get_stripped_report() for key in six.iterkeys(self.entries) if not (self.entries[key].num_requests == 0 and self.entries[key].num_failures == 0)]
-    
+
     def serialize_errors(self):
         return dict([(k, e.to_dict()) for k, e in six.iteritems(self.errors)])
-        
+
 
 class StatsEntry(object):
     """
     Represents a single stats entry (name and method)
     """
-    
+
     name = None
     """ Name (URL) of this stats entry """
-    
+
     method = None
     """ Method (GET, POST, PUT, etc.) """
-    
+
     num_requests = None
     """ The number of requests made """
-    
+
     num_none_requests = None
     """ The number of requests made with a None response time (typically async requests) """
 
     num_failures = None
     """ Number of failed request """
-    
+
     total_response_time = None
     """ Total sum of the response times """
-    
+
     min_response_time = None
     """ Minimum response time """
-    
+
     max_response_time = None
     """ Maximum response time """
-    
+
     num_reqs_per_sec = None
     """ A {second => request_count} dict that holds the number of requests made per second """
 
     num_fail_per_sec = None
-    """ A (second => failure_count) dict that hold the number of failures per second """    
-    
+    """ A (second => failure_count) dict that hold the number of failures per second """
+
     response_times = None
     """
     A {response_time => count} dict that holds the response time distribution of all
@@ -193,7 +193,7 @@ class StatsEntry(object):
     
     This dict is used to calculate the median and percentile response times.
     """
-    
+
     use_response_times_cache = False
     """
     If set to True, the copy of the response_time dict will be stored in response_times_cache 
@@ -201,29 +201,29 @@ class StatsEntry(object):
     We can use this dict to calculate the *current*  median response time, as well as other response 
     time percentiles.
     """
-    
+
     response_times_cache = None
     """
     If use_response_times_cache is set to True, this will be a {timestamp => CachedResponseTimes()} 
     OrderedDict that holds a copy of the response_times dict for each of the last 20 seconds.
     """
-    
+
     total_content_length = None
     """ The sum of the content length of all the requests for this entry """
-    
+
     start_time = None
     """ Time of the first request for this entry """
-    
+
     last_request_timestamp = None
     """ Time of the last request for this entry """
-    
+
     def __init__(self, stats, name, method, use_response_times_cache=False):
         self.stats = stats
         self.name = name
         self.method = method
         self.use_response_times_cache = use_response_times_cache
         self.reset()
-    
+
     def reset(self):
         self.start_time = time.time()
         self.num_requests = 0
@@ -240,16 +240,16 @@ class StatsEntry(object):
         if self.use_response_times_cache:
             self.response_times_cache = OrderedDict()
             self._cache_response_times(int(time.time()))
-    
+
     def log(self, response_time, content_length):
         # get the time
         current_time = time.time()
         t = int(current_time)
-        
+
         if self.use_response_times_cache and self.last_request_timestamp and t > int(self.last_request_timestamp):
             # see if we shall make a copy of the respone_times dict and store in the cache
             self._cache_response_times(t-1)
-        
+
         self.num_requests += 1
         self._log_time_of_request(current_time)
         self._log_response_time(response_time)
@@ -356,7 +356,7 @@ class StatsEntry(object):
             return self.num_requests / (self.stats.last_request_timestamp - self.stats.start_time)
         except ZeroDivisionError:
             return 0.0
-    
+
     @property
     def total_fail_per_sec(self):
         if not self.stats.last_request_timestamp or not self.stats.start_time:
@@ -372,7 +372,7 @@ class StatsEntry(object):
             return self.total_content_length / self.num_requests
         except ZeroDivisionError:
             return 0
-    
+
     def extend(self, other):
         """
         Extend the data from the current StatsEntry with the stats from another
@@ -402,7 +402,7 @@ class StatsEntry(object):
             self.num_reqs_per_sec[key] = self.num_reqs_per_sec.get(key, 0) + other.num_reqs_per_sec[key]
         for key in other.num_fail_per_sec:
             self.num_fail_per_sec[key] = self.num_fail_per_sec.get(key, 0) + other.num_fail_per_sec[key]
-    
+
     def serialize(self):
         return {
             "name": self.name,
@@ -420,7 +420,7 @@ class StatsEntry(object):
             "num_reqs_per_sec": self.num_reqs_per_sec,
             "num_fail_per_sec": self.num_fail_per_sec,
         }
-    
+
     @classmethod
     def unserialize(cls, data):
         obj = cls(None, data["name"], data["method"])
@@ -440,7 +440,7 @@ class StatsEntry(object):
         ]:
             setattr(obj, key, data[key])
         return obj
-    
+
     def get_stripped_report(self):
         """
         Return the serialized version of this StatsEntry, and then clear the current stats.
@@ -448,7 +448,7 @@ class StatsEntry(object):
         report = self.serialize()
         self.reset()
         return report
-    
+
     def to_string(self, current=True):
         """
         Return the stats as a string suitable for console output. If current is True, it'll show 
@@ -472,10 +472,10 @@ class StatsEntry(object):
             rps or 0,
             fail_per_sec or 0,
         )
-    
+
     def __str__(self):
         return self.to_string(current=True)
-    
+
     def get_response_time_percentile(self, percent):
         """
         Get the response time that a certain number of percent of the requests
@@ -484,7 +484,7 @@ class StatsEntry(object):
         Percent specified in range: 0.0 - 1.0
         """
         return calculate_response_time_percentile(self.response_times, self.num_requests, percent)
-    
+
     def get_current_response_time_percentile(self, percent):
         """
         Calculate the *current* response time for a certain percentile. We use a sliding 
@@ -505,28 +505,28 @@ class StatsEntry(object):
         for i in xrange(9):
             acceptable_timestamps.append(t-CURRENT_RESPONSE_TIME_PERCENTILE_WINDOW-i)
             acceptable_timestamps.append(t-CURRENT_RESPONSE_TIME_PERCENTILE_WINDOW+i)
-        
+
         cached = None
         for ts in acceptable_timestamps:
             if ts in self.response_times_cache:
                 cached = self.response_times_cache[ts]
                 break
-        
+
         if cached:
             # If we fond an acceptable cached response times, we'll calculate a new response 
             # times dict of the last 10 seconds (approximately) by diffing it with the current 
             # total response times. Then we'll use that to calculate a response time percentile 
             # for that timeframe
             return calculate_response_time_percentile(
-                diff_response_time_dicts(self.response_times, cached.response_times), 
-                self.num_requests - cached.num_requests, 
+                diff_response_time_dicts(self.response_times, cached.response_times),
+                self.num_requests - cached.num_requests,
                 percent,
             )
-    
+
     def percentile(self, tpl=" %-" + str(STATS_NAME_WIDTH) + "s %8d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d"):
         if not self.num_requests:
             raise ValueError("Can't calculate percentile on url with no successful requests")
-        
+
         return tpl % (
             (self.method and self.method + " " or "") + self.name,
             self.num_requests,
@@ -542,20 +542,20 @@ class StatsEntry(object):
             self.get_response_time_percentile(0.9999),
             self.get_response_time_percentile(1.00)
         )
-    
+
     def _cache_response_times(self, t):
         self.response_times_cache[t] = CachedResponseTimes(
             response_times=copy(self.response_times),
             num_requests=self.num_requests,
         )
-        
-        
+
+
         # We'll use a cache size of CURRENT_RESPONSE_TIME_PERCENTILE_WINDOW + 10 since - in the extreme case -
         # we might still use response times (from the cache) for t-CURRENT_RESPONSE_TIME_PERCENTILE_WINDOW-10 
         # to calculate the current response time percentile, if we're missing cached values for the subsequent 
         # 20 seconds
         cache_size = CURRENT_RESPONSE_TIME_PERCENTILE_WINDOW + 10
-        
+
         if len(self.response_times_cache) > cache_size:
             # only keep the latest 20 response_times dicts
             for i in xrange(len(self.response_times_cache) - cache_size):
@@ -592,7 +592,7 @@ class StatsError(object):
         self.occurrences += 1
 
     def to_name(self):
-        return "%s %s: %r" % (self.method, 
+        return "%s %s: %r" % (self.method,
             self.name, repr(self.error))
 
     def to_dict(self):
@@ -606,9 +606,9 @@ class StatsError(object):
     @classmethod
     def from_dict(cls, data):
         return cls(
-            data["method"], 
-            data["name"], 
-            data["error"], 
+            data["method"],
+            data["name"],
+            data["error"],
             data["occurrences"]
         )
 
@@ -659,7 +659,7 @@ def on_slave_report(client_id, data):
             global_stats.errors[error_key] = StatsError.from_dict(error)
         else:
             global_stats.errors[error_key].occurrences += error["occurrences"]
-    
+
     # save the old last_request_timestamp, to see if we should store a new copy
     # of the response times in the response times cache
     old_last_request_timestamp = global_stats.total.last_request_timestamp
@@ -673,7 +673,7 @@ def on_slave_report(client_id, data):
         # (which is what the response times cache is used for) uses an approximation of the 
         # last 10 seconds anyway, it should be fine to ignore this. 
         global_stats.total._cache_response_times(int(global_stats.total.last_request_timestamp))
-    
+
 
 events.request_success += on_request_success
 events.request_failure += on_request_failure
@@ -695,17 +695,17 @@ def print_stats(stats, current=True):
 def print_percentile_stats(stats):
     console_logger.info("Percentage of the requests completed within given times")
     console_logger.info((" %-" + str(STATS_NAME_WIDTH) + "s %8s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s %6s") % (
-        'Name', 
-        '# reqs', 
-        '50%', 
-        '66%', 
-        '75%', 
-        '80%', 
-        '90%', 
-        '95%', 
-        '98%', 
-        '99%', 
-        '99.9%', 
+        'Name',
+        '# reqs',
+        '50%',
+        '66%',
+        '75%',
+        '80%',
+        '90%',
+        '95%',
+        '98%',
+        '99%',
+        '99.9%',
         '99.99%',
         '100%',
     ))
@@ -715,7 +715,7 @@ def print_percentile_stats(stats):
         if r.response_times:
             console_logger.info(r.percentile())
     console_logger.info("-" * (90 + STATS_NAME_WIDTH))
-    
+
     if stats.total.response_times:
         console_logger.info(stats.total.percentile())
     console_logger.info("")
@@ -867,15 +867,14 @@ def report_data():
             distribution.append(a)
         else:
             distribution.append(s.name, 0, "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A")
-        try:
-            failures.append([
-                s.method,
-                s.name,
-                s.error,
-                s.occurrences,
-            ])
-        except:
-            pass
+
+    for s in sort_stats(runners.locust_runner.stats.errors):
+        failures.append([
+            s.method,
+            s.name,
+            s.error,
+            s.occurrences,
+        ])
     data = {
         'requests': requests,
         'distribution': distribution,
