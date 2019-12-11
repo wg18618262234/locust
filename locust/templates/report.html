@@ -8,6 +8,7 @@
 <body>
 <div style="text-align: center"><h1>Test Report</h1></div>
 <div style="padding:20px">
+    <div><h2>request statistics</h2></div>
     <table id="requests" border="1">
         <thead>
         <tr>
@@ -36,6 +37,7 @@
 </div>
 <a href="http://127.0.0.1:5000/get/test_report_data"></a>
 <div style="padding:20px">
+    <div><h2>response time distribution</h2></div>
     <table id="distribution" border="1">
         <thead>
         <tr>
@@ -66,6 +68,7 @@
     </table>
 </div>
 <div style="padding:20px">
+    <div><h2>failures</h2></div>
     <table id="failures" border="1">
         <thead>
         <tr>
@@ -87,17 +90,28 @@
     </table>
 </div>
 <div style="padding:20px">
-    <table id="exceptions" border="1">
+    <div><h2>error Info</h2></div>
+    <table id="error_info" border="1">
         <thead>
         <tr>
-            <th>Count</th>
-            <th>Message</th>
-            <th>Traceback</th>
-            <th>Nodes</th>
+            <th>id</th>
+            <th>url</th>
+            <th>method</th>
+            <th>request header</th>
+            <th>data</th>
+            <th>responds header</th>
+            <th>error</th>
+            <th>create time</th>
         </tr>
         </thead>
         <tbody>
-
+        {%for r in error_info%}
+        <tr>
+            {%for i in r%}
+            <td>{{i}}</td>
+            {%endfor%}
+        </tr>
+        {%endfor%}
         </tbody>
     </table>
 </div>
